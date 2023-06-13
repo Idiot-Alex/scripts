@@ -1,13 +1,24 @@
 #!/bin/bash
 
+_options="-r"
+_src_file=""
+_target_file=""
+
 function help {
-cat <<EOF
-  SCP命令的语法如下：
+  echo -e "
+  本脚本 scp.sh 使用方式如下：
 
-  scp [选项] [源文件] [目标地址]
+  ./scp.sh -h # 查看帮助
 
-  # 选项：
-  • -h：使用说明
+  ./scp.sh # 进入交互式命令，分别输入 [options]、[source file]、[target file]，最后确认是否执行 scp 命令
+  "
+}
+
+function start {
+  echo -e "
+  current command: scp [options] [source file] [target file]
+
+  1. please input the [options], and there are [options]:
   • -P <port>：指定远程服务器的端口号，默认为 22。
   • -p：保留原始文件的文件属性，例如文件的创建时间、修改时间和权限等。
   • -q：启用静默模式，不显示进度信息，只显示错误和警告信息。
@@ -15,33 +26,54 @@ cat <<EOF
   • -C：启用 gzip 压缩选项，在传输过程中压缩文件，加快传输速度。
   • -i：使用用户名和密码登录远程主机，不使用公钥验证。
   • -o：传递 SSH 客户端选项，用于配置 SSH 会话。
-  • -S：指定用于控制对等连接的 UNIX 套接字。
+  • -S：指定用于控制对等连接的 UNIX 套接字
+  "
+  read -p "now, input your [options]: " _options
 
-  # 示例：
+  echo -e "$_options"
 
-  # 将本地文件 file.txt 复制到远程主机 remote-host 的 /home/user 目录下：
-  scp file.txt user@remote-host:/home/user
-
-  # 将远程主机 remote-host 的 /home/user/file.txt 复制到本地 /tmp 目录下：
-  scp user@remote-host:/home/user/file.txt /tmp
-
-  # 递归复制本地目录 myfolder 到远程主机 remote-host 的 /home/user 目录下：
-  scp -r myfolder user@remote-host:/home/user
-
-  # 从远程主机 remote-host 的 /home/user/myfolder 目录下递归复制文件到本地 /tmp 目录下，并显示详细信息：
-  scp -r -v user@remote-host:/home/user/myfolder /tmp
-EOF
+  source_file
 }
 
-_default_port=22
-_src_file=""
-_target_file=""
+function source_file {
+  read -p "please input the [source file]: " _src_file
+  echo -e "$_src_file"
+
+  target_file
+}
+
+function target_file {
+  read -p "please input the [target file]: " _target_file
+  echo -e "$_target_file"
+
+  scp_func
+}
+
+function scp_func {
+  cmd="scp $_options $_src_file $_target_file"
+  echo -e "
+  final command is:
+
+  $cmd
+  "
+
+  if confirm "do you want to execute this command?"; then
+    eval "$cmd"
+  else
+    echo "you don't want to execute this command"
+  fi
+}
+
+function confirm {
+  # $1 是要确认的操作说明字符串
+  read -p "$1 (y/n): " answer
+  # 判断用户输入的是否为 y，如果是，则返回 0，否则返回 1
+  [[ "$answer" == "y" || "$answer" == "Y" ]] && return 0 || return 1
+}
 
 if [ "$1" = "-h" ]; then
   help
   exit 0
-else
-  echo -e "Error: invalid option $1 \r\n"
-  help
-  exit 1
 fi
+
+start
