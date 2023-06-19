@@ -8,11 +8,11 @@ _target_file=""
 
 function help {
   echo -e "
-  本脚本 scp.sh 使用方式如下：
+  本脚本 $(basename $0) 使用方式如下：
 
-  ./scp.sh -h # 查看帮助
+  ./$(basename $0) -h # 查看帮助
 
-  ./scp.sh # 进入交互式命令，分别输入 [options]、[source file]、[target file]，最后确认是否执行 scp 命令
+  ./$(basename $0) # 进入交互式命令，分别输入 [options]、[source file]、[target file]，最后确认是否执行 scp 命令
   "
 }
 
